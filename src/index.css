@@ -4,16 +4,16 @@
 
 @theme {
   /* Color tokens -- recalibrated to match the RTD reference site's brand
-     blue (#0072BC), with a cooler neutral gray scale in place of the
-     original warm sand tones. Red stays reserved for Direct/Breaking. */
-  --color-marine-950: #051F32;
-  --color-marine-900: #063A5C;
-  --color-marine-800: #075079;
-  --color-marine-700: #0072BC;
-  --color-marine-600: #1E88CE;
-  --color-marine-500: #4DA3DA;
-  --color-marine-100: #E6F2FA;
-  --color-marine-50: #F2F8FC;
+     hue, but deepened and desaturated: the initial #0072BC read as too
+     light/vivid against the rest of the institutional palette. */
+  --color-marine-950: #041D2C;
+  --color-marine-900: #052A3F;
+  --color-marine-800: #073E5C;
+  --color-marine-700: #0A5A82;
+  --color-marine-600: #1D6D93;
+  --color-marine-500: #4A87A8;
+  --color-marine-100: #E3EEF3;
+  --color-marine-50: #F1F6F8;
 
   --color-sand-100: #F1F3F5;
   --color-sand-200: #E7EAED;
