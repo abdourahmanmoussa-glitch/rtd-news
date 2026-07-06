@@ -3,20 +3,21 @@
 @import "@fontsource-variable/inter";
 
 @theme {
-  /* Color tokens -- RTD institutional identity, drawn from the Red Sea coast
-     and the RTD emblem (marine blue globe, red + green dhow-sail swoosh). */
-  --color-marine-950: #081524;
-  --color-marine-900: #0B2545;
-  --color-marine-800: #123863;
-  --color-marine-700: #1A4E8A;
-  --color-marine-600: #2568B0;
-  --color-marine-500: #3B82C4;
-  --color-marine-100: #E4EDF6;
-  --color-marine-50: #F2F6FA;
+  /* Color tokens -- recalibrated to match the RTD reference site's brand
+     blue (#0072BC), with a cooler neutral gray scale in place of the
+     original warm sand tones. Red stays reserved for Direct/Breaking. */
+  --color-marine-950: #051F32;
+  --color-marine-900: #063A5C;
+  --color-marine-800: #075079;
+  --color-marine-700: #0072BC;
+  --color-marine-600: #1E88CE;
+  --color-marine-500: #4DA3DA;
+  --color-marine-100: #E6F2FA;
+  --color-marine-50: #F2F8FC;
 
-  --color-sand-100: #F1EDE6;
-  --color-sand-200: #E9E2D5;
-  --color-sand-300: #DCD2BE;
+  --color-sand-100: #F1F3F5;
+  --color-sand-200: #E7EAED;
+  --color-sand-300: #D9DEE3;
 
   --color-ink-900: #12181F;
   --color-ink-700: #384454;
@@ -26,7 +27,7 @@
   --color-signal-500: #D0233B;
   --color-signal-100: #FBE4E7;
 
-  --color-line: #E4DED2;
+  --color-line: #E2E6EA;
 
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
