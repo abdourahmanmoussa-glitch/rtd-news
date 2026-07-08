@@ -1,13 +1,49 @@
 import { Link } from 'react-router-dom';
-import { articles, getCategoryBySlug } from '@/data/articles';
+import { useFeaturedArticles, useMostRecent } from '@/lib/queries';
+import { useCategoryMap } from '@/hooks/useCategoryMap';
 import { CategoryTag } from '@/components/ui/badges';
 import { formatRelative } from '@/lib/utils';
 import { ArrowUpRight } from 'lucide-react';
+import { LoadingBlock, EmptyBlock } from '@/components/shared/QueryStates';
+import type { Article } from '@/types/content';
 
 export function Hero() {
-  const [main, ...rest] = articles.filter((a) => a.featured).concat(articles);
+  const { data: featured, isLoading: loadingFeatured } = useFeaturedArticles(6);
+  const { data: recent, isLoading: loadingRecent } = useMostRecent(6);
+  const categoryMap = useCategoryMap();
+
+  const isLoading = loadingFeatured || loadingRecent;
+
+  if (isLoading) {
+    return (
+      <section className="border-b border-line">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-10">
+          <LoadingBlock label="Chargement de la une…" />
+        </div>
+      </section>
+    );
+  }
+
+  const seen = new Set<string>();
+  const pool: Article[] = [...(featured ?? []), ...(recent ?? [])].filter((a) => {
+    if (seen.has(a.id)) return false;
+    seen.add(a.id);
+    return true;
+  });
+
+  if (pool.length === 0) {
+    return (
+      <section className="border-b border-line">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-10">
+          <EmptyBlock message="Aucun article publié pour le moment. Ajoutez du contenu depuis le CMS." />
+        </div>
+      </section>
+    );
+  }
+
+  const [main, ...rest] = pool;
   const secondary = rest.slice(0, 5);
-  const category = getCategoryBySlug(main.categorySlug);
+  const category = categoryMap[main.categorySlug];
 
   return (
     <section className="border-b border-line">
@@ -46,7 +82,7 @@ export function Hero() {
           {/* Secondary stories */}
           <div className="flex flex-col divide-y divide-line">
             {secondary.map((a) => {
-              const c = getCategoryBySlug(a.categorySlug);
+              const c = categoryMap[a.categorySlug];
               return (
                 <Link
                   key={a.id}

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { categories } from '@/data/articles';
+import { useCategories } from '@/lib/queries';
 import { mediaNav } from '@/data/navigation';
 import { Smartphone, Apple } from 'lucide-react';
 
@@ -55,6 +55,7 @@ export function ConfidentialitePage() {
 }
 
 export function PlanDuSitePage() {
+  const { data: categories } = useCategories();
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 xl:px-10 py-16">
       <h1 className="font-display text-3xl font-medium text-marine-900 mb-8">Plan du site</h1>
@@ -62,7 +63,7 @@ export function PlanDuSitePage() {
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-500 mb-3">Rubriques</h2>
           <ul className="flex flex-col gap-2">
-            {categories.map((c) => (
+            {categories?.map((c) => (
               <li key={c.slug}>
                 <Link to={`/rubrique/${c.slug}`} className="text-sm text-ink-700 hover:text-marine-800">{c.name}</Link>
               </li>

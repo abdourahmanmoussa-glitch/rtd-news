@@ -1,15 +1,23 @@
 import { useParams, Link } from 'react-router-dom';
-import { getArticleBySlug, getCategoryBySlug, getRelatedArticles } from '@/data/articles';
+import { useArticleBySlug, useRelatedArticles } from '@/lib/queries';
+import { useCategoryMap } from '@/hooks/useCategoryMap';
 import { CategoryTag } from '@/components/ui/badges';
 import { ArticleCard } from '@/components/shared/ArticleCard';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { formatDate } from '@/lib/utils';
 import { Globe, AtSign, Link2, MessageSquare } from 'lucide-react';
 import { Seo } from '@/components/shared/Seo';
+import { LoadingBlock } from '@/components/shared/QueryStates';
 
 export function ArticlePage() {
   const { slug = '' } = useParams();
-  const article = getArticleBySlug(slug);
+  const { data: article, isLoading } = useArticleBySlug(slug);
+  const { data: related } = useRelatedArticles(article);
+  const categoryMap = useCategoryMap();
+
+  if (isLoading) {
+    return <LoadingBlock label="Chargement de l'article…" />;
+  }
 
   if (!article) {
     return (
@@ -24,8 +32,7 @@ export function ArticlePage() {
     );
   }
 
-  const category = getCategoryBySlug(article.categorySlug);
-  const related = getRelatedArticles(article);
+  const category = categoryMap[article.categorySlug];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-10 py-10">
@@ -97,7 +104,7 @@ export function ArticlePage() {
             {article.commentsCount} commentaires
           </div>
 
-          {related.length > 0 && (
+          {related && related.length > 0 && (
             <div className="mt-14">
               <h2 className="font-display text-xl font-medium text-marine-900 mb-6">Articles similaires</h2>
               <div className="grid sm:grid-cols-3 gap-5">

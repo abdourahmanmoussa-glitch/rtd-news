@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { articles, categories } from '@/data/articles';
+import { useCategories, useAuthors, useSearchArticles } from '@/lib/queries';
 import { ArticleCard } from '@/components/shared/ArticleCard';
 import { Search as SearchIcon } from 'lucide-react';
-
-const journalists = Array.from(new Set(articles.map((a) => a.author.name)));
+import { LoadingBlock, ErrorBlock } from '@/components/shared/QueryStates';
+import { Seo } from '@/components/shared/Seo';
 
 export function RecherchePage() {
   const [params, setParams] = useSearchParams();
@@ -13,21 +13,14 @@ export function RecherchePage() {
   const [journalist, setJournalist] = useState(params.get('journaliste') ?? '');
   const [sort, setSort] = useState<'recent' | 'ancien'>('recent');
 
-  const results = useMemo(() => {
-    let list = articles.filter((a) => {
-      const matchesQ = q.trim()
-        ? (a.title + a.excerpt).toLowerCase().includes(q.trim().toLowerCase())
-        : true;
-      const matchesCat = categorySlug ? a.categorySlug === categorySlug : true;
-      const matchesJournalist = journalist ? a.author.name === journalist : true;
-      return matchesQ && matchesCat && matchesJournalist;
-    });
-    list = [...list].sort((a, b) => {
-      const diff = new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-      return sort === 'recent' ? diff : -diff;
-    });
-    return list;
-  }, [q, categorySlug, journalist, sort]);
+  const { data: categories } = useCategories();
+  const { data: authors } = useAuthors();
+  const { data: results, isLoading, isError } = useSearchArticles({
+    q: params.get('q') ?? undefined,
+    categorySlug: params.get('categorie') ?? undefined,
+    authorName: params.get('journaliste') ?? undefined,
+    sort,
+  });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +33,7 @@ export function RecherchePage() {
 
   return (
     <div>
+      <Seo title="Recherche avancée" description="Retrouvez un article par mot-clé, rubrique ou journaliste." />
       <div className="bg-sand-100/60 border-b border-line">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 xl:px-10 py-12">
           <h1 className="font-display text-3xl sm:text-4xl font-medium text-marine-900">Recherche avancée</h1>
@@ -65,7 +59,7 @@ export function RecherchePage() {
                 className="bg-white border border-line rounded-xl px-4 py-2.5 text-sm text-ink-700 outline-none focus-visible:border-marine-700"
               >
                 <option value="">Toutes les rubriques</option>
-                {categories.map((c) => (
+                {categories?.map((c) => (
                   <option key={c.slug} value={c.slug}>{c.name}</option>
                 ))}
               </select>
@@ -76,8 +70,8 @@ export function RecherchePage() {
                 className="bg-white border border-line rounded-xl px-4 py-2.5 text-sm text-ink-700 outline-none focus-visible:border-marine-700"
               >
                 <option value="">Tous les journalistes</option>
-                {journalists.map((j) => (
-                  <option key={j} value={j}>{j}</option>
+                {authors?.map((a) => (
+                  <option key={a.id} value={a.name}>{a.name}</option>
                 ))}
               </select>
 
@@ -102,22 +96,28 @@ export function RecherchePage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 xl:px-10 py-12">
-        <p className="text-sm text-ink-500 mb-6">
-          {results.length} résultat{results.length !== 1 && 's'}
-        </p>
-        {results.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-ink-500">Aucun article ne correspond à votre recherche.</p>
-            <Link to="/actualites" className="text-marine-700 font-medium hover:underline mt-3 inline-block">
-              Voir toutes les actualités
-            </Link>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-6">
-            {results.map((a) => (
-              <ArticleCard key={a.id} article={a} />
-            ))}
-          </div>
+        {isLoading && <LoadingBlock />}
+        {isError && <ErrorBlock />}
+        {!isLoading && !isError && (
+          <>
+            <p className="text-sm text-ink-500 mb-6">
+              {results?.length ?? 0} résultat{(results?.length ?? 0) !== 1 && 's'}
+            </p>
+            {(results?.length ?? 0) === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-ink-500">Aucun article ne correspond à votre recherche.</p>
+                <Link to="/actualites" className="text-marine-700 font-medium hover:underline mt-3 inline-block">
+                  Voir toutes les actualités
+                </Link>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-6">
+                {results?.map((a) => (
+                  <ArticleCard key={a.id} article={a} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

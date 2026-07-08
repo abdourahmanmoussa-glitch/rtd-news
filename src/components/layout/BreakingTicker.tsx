@@ -1,7 +1,14 @@
-import { breakingHeadlines } from '@/data/articles';
+import { useBreakingHeadlines } from '@/lib/queries';
 
 export function BreakingTicker() {
-  const items = [...breakingHeadlines, ...breakingHeadlines];
+  const { data } = useBreakingHeadlines();
+  const headlines = data ?? [];
+
+  // Pas d'actualité urgente en base : on masque la bande plutôt que
+  // d'afficher un bandeau "À la une" vide.
+  if (headlines.length === 0) return null;
+
+  const items = [...headlines, ...headlines];
 
   return (
     <div className="bg-marine-900 text-white overflow-hidden">

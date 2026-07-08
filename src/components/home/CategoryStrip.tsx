@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom';
-import { categories, getArticlesByCategory } from '@/data/articles';
+import { useCategories, useCategoryArticleCounts } from '@/lib/queries';
 
 const featuredSlugs = ['infrastructure', 'international', 'sante', 'sports', 'culture', 'technologie'];
 
 export function CategoryStrip() {
+  const { data: categories } = useCategories();
+  const { data: counts } = useCategoryArticleCounts(featuredSlugs);
+
   const items = featuredSlugs
-    .map((slug) => categories.find((c) => c.slug === slug))
-    .filter(Boolean) as typeof categories;
+    .map((slug) => (categories ?? []).find((c) => c.slug === slug))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+  if (items.length === 0) return null;
 
   return (
     <section className="bg-sand-100/60 border-y border-line">
@@ -28,7 +33,7 @@ export function CategoryStrip() {
                 {c.name}
               </p>
               <p className="text-xs text-ink-500 mt-1">
-                {getArticlesByCategory(c.slug).length} articles
+                {counts?.[c.slug] ?? 0} articles
               </p>
             </Link>
           ))}

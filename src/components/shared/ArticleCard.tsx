@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import type { Article } from '@/types/content';
-import { getCategoryBySlug } from '@/data/articles';
+import { useCategoryMap } from '@/hooks/useCategoryMap';
 import { CategoryTag } from '@/components/ui/badges';
 import { formatRelative } from '@/lib/utils';
 import { Clock } from 'lucide-react';
 
 export function ArticleCard({ article, size = 'md' }: { article: Article; size?: 'sm' | 'md' | 'lg' }) {
-  const category = getCategoryBySlug(article.categorySlug);
+  const categoryMap = useCategoryMap();
+  const category = categoryMap[article.categorySlug];
   const imgH = size === 'lg' ? 'h-64' : size === 'sm' ? 'h-36' : 'h-48';
 
   return (

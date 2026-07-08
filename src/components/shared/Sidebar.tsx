@@ -1,15 +1,22 @@
 import { ArticleRow } from '@/components/shared/ArticleCard';
-import { getMostRead, getMostRecent, getMostCommented } from '@/data/articles';
+import { useMostRead, useMostRecent, useMostCommented } from '@/lib/queries';
 import { CloudSun } from 'lucide-react';
 import { useState } from 'react';
+import { LoadingBlock, EmptyBlock } from '@/components/shared/QueryStates';
 
 function TabbedList() {
   const [tab, setTab] = useState<'lu' | 'recent' | 'commente'>('lu');
-  const lists = {
-    lu: getMostRead(5),
-    recent: getMostRecent(5),
-    commente: getMostCommented(5),
+  const mostRead = useMostRead(5);
+  const mostRecent = useMostRecent(5);
+  const mostCommented = useMostCommented(5);
+
+  const queries = {
+    lu: mostRead,
+    recent: mostRecent,
+    commente: mostCommented,
   };
+  const active = queries[tab];
+
   const tabs: { key: typeof tab; label: string }[] = [
     { key: 'lu', label: 'Les plus lus' },
     { key: 'recent', label: 'Récents' },
@@ -34,7 +41,10 @@ function TabbedList() {
         ))}
       </div>
       <div className="divide-y divide-line/70">
-        {lists[tab].map((a, i) => (
+        {active.isLoading && <LoadingBlock />}
+        {active.isError && <EmptyBlock message="Impossible de charger cette liste." />}
+        {active.data?.length === 0 && <EmptyBlock message="Rien à afficher pour le moment." />}
+        {active.data?.map((a, i) => (
           <ArticleRow key={a.id} article={a} index={i + 1} />
         ))}
       </div>

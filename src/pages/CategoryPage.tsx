@@ -1,29 +1,33 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getCategoryBySlug, getArticlesByCategory } from '@/data/articles';
+import { useCategory, useArticles } from '@/lib/queries';
 import { ArticleCard } from '@/components/shared/ArticleCard';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { Seo } from '@/components/shared/Seo';
 import { Pagination } from '@/components/shared/Pagination';
+import { LoadingBlock, ErrorBlock, EmptyBlock } from '@/components/shared/QueryStates';
 
 const PAGE_SIZE = 6;
 
 export function CategoryPage() {
   const { slug = '' } = useParams();
-  const category = getCategoryBySlug(slug);
-  const items = getArticlesByCategory(slug);
+  const { data: category, isLoading: loadingCategory } = useCategory(slug);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     setPage(1);
   }, [slug]);
 
-  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
-  const shown = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const { data, isLoading: loadingArticles, isError } = useArticles({ categorySlug: slug, page, pageSize: PAGE_SIZE });
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
 
   function handlePageChange(next: number) {
     setPage(next);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (loadingCategory) {
+    return <LoadingBlock label="Chargement de la rubrique…" />;
   }
 
   if (!category) {
@@ -57,17 +61,22 @@ export function CategoryPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-10 py-12">
         <div className="grid lg:grid-cols-[1fr_320px] gap-10">
           <div>
-            {items.length === 0 ? (
-              <p className="text-ink-500">Aucun article disponible pour le moment dans cette rubrique.</p>
+            {loadingArticles && <LoadingBlock />}
+            {isError && <ErrorBlock />}
+            {!loadingArticles && !isError && data?.articles.length === 0 ? (
+              <EmptyBlock message="Aucun article disponible pour le moment dans cette rubrique." />
             ) : (
-              <>
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {shown.map((a) => (
-                    <ArticleCard key={a.id} article={a} />
-                  ))}
-                </div>
-                <Pagination page={page} totalPages={totalPages} onChange={handlePageChange} />
-              </>
+              !loadingArticles &&
+              !isError && (
+                <>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {data?.articles.map((a) => (
+                      <ArticleCard key={a.id} article={a} />
+                    ))}
+                  </div>
+                  <Pagination page={page} totalPages={totalPages} onChange={handlePageChange} />
+                </>
+              )
             )}
           </div>
           <Sidebar />
